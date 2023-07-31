@@ -30,6 +30,7 @@ const userSchema = mongoose.Schema({
     password: String,
     cpassword: String,
     profileImage: String,
+    role:String,
 });
 
 // Model
@@ -66,12 +67,13 @@ app.post("/Authentification", async (req, res) => {
     const { email } = req.body;
   
     try {
-      const result = await userModel.findOne({ email: email });
+      const result = await userModel.findOne({ email: email });//ajouter mdp
   
       if (result) {
         const dataSend = {
           _id: result._id,
           email: result.email,
+          role:result.role,
           profileImage: result.profileImage,
         };
         console.log(dataSend);
