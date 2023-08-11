@@ -27,6 +27,7 @@ const userSchema = mongoose.Schema({
         type: String,
         unique: true,
     },
+    nom: String,
     password: String,
     cpassword: String,
     profileImage: String,
@@ -57,39 +58,49 @@ app.post("/Inscription", async (req, res) => {
         }
     } catch (err) {
         console.log(err);
-        // Handle the error here
-        res.status(500).json({ error: "Error" }); // Sending an error response (modify as needed)
+        res.status(500).json({ error: "Error" }); 
     }
 });
-//api login
+//api authentification
 app.post("/Authentification", async (req, res) => {
-    console.log(req.body);
-    const { email } = req.body;
-  
-    try {
-      const result = await userModel.findOne({ email: email });//ajouter mdp
-  
-      if (result) {
+  console.log(req.body);
+  const { email, password,nom } = req.body;
+
+  try {
+    const user = await userModel.findOne({ email: email });
+
+    if (user) {
+
+      if (user.password === password) {
         const dataSend = {
-          _id: result._id,
-          email: result.email,
-          role:result.role,
-          profileImage: result.profileImage,
+          _id: user._id,
+          email: user.email,
+          nom: user.nom,
+          role: user.role,
+          profileImage: user.profileImage,
         };
         console.log(dataSend);
-        res.send({ message: "Authentification Valide", alert: true ,data:dataSend});
-      }else{
-        res.send({ message: "Email erroné", alert:false});
+
+        if (user.role === req.body.role) {
+          res.send({ message: "Authentification Valide", alert: true, data: dataSend });
+        } else {
+          res.send({ message: "Rôle invalide", alert: false });
+        }
+      } else {
+        res.send({ message: "Mot de passe erroné", alert: false });
       }
-  
-    } catch (err) {
-      console.log(err);
-      res.status(500).json({ error: "Error" });
+    } else {
+      res.send({ message: "Email erroné", alert: false });
     }
-  });
-  
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Erreur lors de l'authentification" });
+  }
+});
 
 
 
-
-app.listen(PORT, () => console.log("Serveur démarré sur le port " + PORT));
+// start the Express server
+app.listen(PORT, () => {
+  console.log(`Serveur démaré sur le port: ${PORT}`);
+});
